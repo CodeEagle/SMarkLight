@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "16CDFB141D7588D1002D50A2"
+               BlueprintIdentifier = "162166871D76ACEC001B7753"
                BuildableName = "SMarkLight.framework"
-               BlueprintName = "SMarkLight"
+               BlueprintName = "SMarkLightOSX"
                ReferencedContainer = "container:SMarkLight.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,9 +32,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "16CDFB1E1D7588D1002D50A2"
-               BuildableName = "SMarkLightTests.xctest"
-               BlueprintName = "SMarkLightTests"
+               BlueprintIdentifier = "162166901D76ACEC001B7753"
+               BuildableName = "SMarkLightOSXTests.xctest"
+               BlueprintName = "SMarkLightOSXTests"
                ReferencedContainer = "container:SMarkLight.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -42,9 +42,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "16CDFB141D7588D1002D50A2"
+            BlueprintIdentifier = "162166871D76ACEC001B7753"
             BuildableName = "SMarkLight.framework"
-            BlueprintName = "SMarkLight"
+            BlueprintName = "SMarkLightOSX"
             ReferencedContainer = "container:SMarkLight.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -64,9 +64,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "16CDFB141D7588D1002D50A2"
+            BlueprintIdentifier = "162166871D76ACEC001B7753"
             BuildableName = "SMarkLight.framework"
-            BlueprintName = "SMarkLight"
+            BlueprintName = "SMarkLightOSX"
             ReferencedContainer = "container:SMarkLight.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -82,9 +82,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "16CDFB141D7588D1002D50A2"
+            BlueprintIdentifier = "162166871D76ACEC001B7753"
             BuildableName = "SMarkLight.framework"
-            BlueprintName = "SMarkLight"
+            BlueprintName = "SMarkLightOSX"
             ReferencedContainer = "container:SMarkLight.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

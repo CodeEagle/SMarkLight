@@ -31,19 +31,14 @@ class RootWin: NSWindow {
     }
 
 	private func setup() {
-        let sc = SMarkEditorScrollView(frame: NSZeroRect)
+        let sc = SMarkEditorScrollView(frame: contentView!.bounds)
 		sc.translatesAutoresizingMaskIntoConstraints = false
 		contentView?.addSubview(sc)
 		contentView?.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-0-[sc]-0-|", options: NSLayoutFormatOptions.DirectionLeftToRight, metrics: nil, views: ["sc": sc]))
 		contentView?.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-0-[sc]-0-|", options: NSLayoutFormatOptions.DirectionLeftToRight, metrics: nil, views: ["sc": sc]))
-        
+    
 		// Load a sample markdown content from a file inside the app bundle
-		if let samplePath = NSBundle.mainBundle().pathForResource("Sample", ofType: "md") {
-			do {
-				let string = try String(contentsOfFile: samplePath)
-				sc.string = string
-			} catch { }
-		}
+		
         
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(3 * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) { () -> Void in
 //            Marklight.theme = SMarkStyle.List.mouNight.value!

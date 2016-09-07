@@ -129,19 +129,19 @@ public struct Marklight {
                 let font = item?.font ?? titleFont
                 let color = item?.foregroundColor ?? titleColor
                 let regex = headerAtxRegex(at: i)
-                
-                regex.0.matches(textStorage.string, range: paragraphRange) { (result) -> Void in
+                regex.matches(textStorage.string, range: paragraphRange) { (result) -> Void in
                     let realRange = rangeWithoutQuote(of: result!.range)
                     textStorage.addAttribute(NSFontAttributeName, value: font, range: realRange)
                     textStorage.addAttribute(NSForegroundColorAttributeName, value: color, range: realRange)
-                    regex.1.matches(textStorage.string, range: realRange) { (innerResult) -> Void in
-                        let realRange = rangeWithoutQuote(of: innerResult!.range)
-                        textStorage.addAttribute(NSForegroundColorAttributeName, value: color, range: realRange)
-                    }
-                    regex.2.matches(textStorage.string, range: realRange) { (innerResult) -> Void in
-                        let realRange = rangeWithoutQuote(of: innerResult!.range)
-                        textStorage.addAttribute(NSForegroundColorAttributeName, value: color, range: realRange)
-                    }
+//                    print(realRange)
+//                    regex.1.matches(textStorage.string, range: realRange) { (innerResult) -> Void in
+//                        let realRange = rangeWithoutQuote(of: innerResult!.range)
+//                        textStorage.addAttribute(NSForegroundColorAttributeName, value: color, range: realRange)
+//                    }
+//                    regex.2.matches(textStorage.string, range: realRange) { (innerResult) -> Void in
+//                        let realRange = rangeWithoutQuote(of: innerResult!.range)
+//                        textStorage.addAttribute(NSForegroundColorAttributeName, value: color, range: realRange)
+//                    }
                 }
             }
         }
@@ -370,35 +370,35 @@ public struct Marklight {
 
 	 ## Subhead ##
 	 */
-    private static var headerAtxRegexMap: [Int : (Regex, Regex, Regex)] = [:]
+    private static var headerAtxRegexMap: [Int : Regex] = [:]
 
-    private static func headerAtxRegex(at level: Int) ->(Regex, Regex, Regex) {
+    private static func headerAtxRegex(at level: Int) ->Regex {
         if let cache = headerAtxRegexMap[level] { return cache }
         let headerAtxPattern = [
             "^(>?)(\\s?)(\\#{\(level)})  # $1 = string of #'s",
             "\\p{Z}*",
-            "(.+?)        # $2 = Header text",
+            "(.*)        # $2 = Header text",
             "\\p{Z}*",
             "\\#*         # optional closing #'s (not counted)",
-            "\\n+"
+            "\\n*"
             ].joinWithSeparator("\n")
         
         let headersAtxRegex = Regex(pattern: headerAtxPattern, options: [.AllowCommentsAndWhitespace, .AnchorsMatchLines])
         
-        let headersAtxOpeningPattern = [
-            "^(\\#{\(level)})"
-            ].joinWithSeparator("\n")
+//        let headersAtxOpeningPattern = [
+//            "^(\\#{\(level)})"
+//            ].joinWithSeparator("\n")
+//        
+//        let headersAtxOpeningRegex = Regex(pattern: headersAtxOpeningPattern, options: [.AllowCommentsAndWhitespace, .AnchorsMatchLines])
+//        
+//        let headersAtxClosingPattern = [
+//            "\\#{\(level)}\\n+"
+//            ].joinWithSeparator("\n")
+//        
+//        let headersAtxClosingRegex = Regex(pattern: headersAtxClosingPattern, options: [.AllowCommentsAndWhitespace, .AnchorsMatchLines])
         
-        let headersAtxOpeningRegex = Regex(pattern: headersAtxOpeningPattern, options: [.AllowCommentsAndWhitespace, .AnchorsMatchLines])
-        
-        let headersAtxClosingPattern = [
-            "\\#{\(level)}\\n+"
-            ].joinWithSeparator("\n")
-        
-        let headersAtxClosingRegex = Regex(pattern: headersAtxClosingPattern, options: [.AllowCommentsAndWhitespace, .AnchorsMatchLines])
-        let ret = (headersAtxRegex, headersAtxOpeningRegex, headersAtxClosingRegex)
-        Marklight.headerAtxRegexMap[level] = ret
-        return ret
+        Marklight.headerAtxRegexMap[level] = headersAtxRegex
+        return headersAtxRegex
     }
     
 	// MARK: Reference links

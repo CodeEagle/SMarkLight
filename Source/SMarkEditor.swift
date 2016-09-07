@@ -15,7 +15,7 @@
 #if os(OSX)
     public class SMarkEditorScrollView: NSScrollView {
         
-        private var textView = SMarkEditor(frame: NSMakeRect(0, 0, 400, 400))
+        private var textView: SMarkEditor!
         public required init?(coder: NSCoder) {
             super.init(coder: coder)
             setup()
@@ -27,8 +27,16 @@
         }
         
         private func setup() {
+            textView = SMarkEditor(frame: bounds)
             documentView = textView
             textView.textContainerInset = NSMakeSize(4, 4)
+            autoresizingMask = [NSAutoresizingMaskOptions.ViewWidthSizable, NSAutoresizingMaskOptions.ViewHeightSizable]
+            themeChange()
+            NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(SMarkEditorScrollView.themeChange), name: Marklight.Event.themeChange.rawValue, object: nil)
+        }
+        
+        @objc private func themeChange() {
+            if let color = Marklight.theme.backgroundColor { backgroundColor = color }
         }
         
         public var string: String? {
@@ -57,29 +65,26 @@ public class SMarkEditor: MTextView {
         automaticDashSubstitutionEnabled = false
         automaticLinkDetectionEnabled = false
         allowsUndo = true
+        autoresizingMask = [NSAutoresizingMaskOptions.ViewWidthSizable, NSAutoresizingMaskOptions.ViewHeightSizable]
         font = Marklight.theme.font
         if let color = Marklight.theme.foregroundColor {
             textColor = color
             insertionPointColor = color
         }
-        if let color = Marklight.theme.backgroundColor { backgroundColor = color }
         
+        themeChange()
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(SMarkEditor.textChange), name: NSTextDidChangeNotification, object: self)
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(SMarkEditor.renderWhenTextChange), name: Marklight.Event.themeChange.rawValue, object: nil)
+    }
+    
+    @objc private func themeChange() {
+        if let color = Marklight.theme.backgroundColor { backgroundColor = color }
     }
     
     override public var intrinsicContentSize: NSSize {
         guard let container = textContainer, manager = layoutManager else { return NSZeroSize }
         manager.ensureLayoutForTextContainer(container)
         return manager.usedRectForTextContainer(container).size
-    }
-    
-    public override func viewDidMoveToSuperview() {
-        super.viewDidMoveToSuperview()
-        guard let value = superview else { return }
-        translatesAutoresizingMaskIntoConstraints = false
-        value.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-0-[textView]-0-|", options: NSLayoutFormatOptions.DirectionLeftToRight, metrics: nil, views: ["textView": self]))
-        value.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-0-[textView]-0-|", options: NSLayoutFormatOptions.DirectionLeftToRight, metrics: nil, views: ["textView": self]))
     }
     
     override public var string: String? {
@@ -177,7 +182,6 @@ public class SMarkEditor: MTextView {
             let st = textStorage
         #endif
         guard let r = range else { return }
-//        guard let value = rawText, st = smarkTextStorage else { return }
         let targetLength = value.characters.count
         let pageSize = r.length + 100
         var location = 0
@@ -230,6 +234,7 @@ public class SMarkEditor: MTextView {
     }
     
     @objc private func renderWhenTextChange() {
+        themeChange()
         firstPage()
         delayPagedRender()
     }

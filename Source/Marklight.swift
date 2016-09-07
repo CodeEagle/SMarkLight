@@ -49,6 +49,7 @@ public struct Marklight {
 		let currentText = (textStorage.string as NSString).substringWithRange(wholeRange)
 		let paragraphRange = (textStorage.string as NSString).paragraphRangeForRange(wholeRange)
 		textStorage.removeAttribute(NSStrikethroughStyleAttributeName, range: wholeRange)
+        textStorage.removeAttribute(NSForegroundColorAttributeName, range: wholeRange)
 		let themeFont = theme.font
 		let codeFont = theme.items[.code]?.font ?? themeFont
 		let quoteFont = theme.items[.blockquote]?.font ?? themeFont
@@ -118,7 +119,6 @@ public struct Marklight {
                 textStorage.addAttribute(NSForegroundColorAttributeName, value: titleColor, range: realRange)
             }
         }
-        
 
         // We detect and process dashed headers
         if currentText.containsString("#") {
@@ -133,19 +133,18 @@ public struct Marklight {
                     let realRange = rangeWithoutQuote(of: result!.range)
                     textStorage.addAttribute(NSFontAttributeName, value: font, range: realRange)
                     textStorage.addAttribute(NSForegroundColorAttributeName, value: color, range: realRange)
-//                    print(realRange)
-//                    regex.1.matches(textStorage.string, range: realRange) { (innerResult) -> Void in
-//                        let realRange = rangeWithoutQuote(of: innerResult!.range)
-//                        textStorage.addAttribute(NSForegroundColorAttributeName, value: color, range: realRange)
-//                    }
-//                    regex.2.matches(textStorage.string, range: realRange) { (innerResult) -> Void in
-//                        let realRange = rangeWithoutQuote(of: innerResult!.range)
-//                        textStorage.addAttribute(NSForegroundColorAttributeName, value: color, range: realRange)
-//                    }
                 }
             }
         }
-
+        
+        // We detect and process strict italics
+        Marklight.strictItalicRegex.matches(textStorage.string, range: paragraphRange) { (result) -> Void in
+            textStorage.addAttribute(NSFontAttributeName, value: italicFont, range: result!.range)
+            textStorage.addAttribute(NSForegroundColorAttributeName, value: italicColor, range: result!.range)
+            //			textStorage.addAttribute(NSForegroundColorAttributeName, value: italicColor, range: NSMakeRange(result!.range.location, 1))
+            //			textStorage.addAttribute(NSForegroundColorAttributeName, value: italicColor, range: NSMakeRange(result!.range.location + result!.range.length - 1, 1))
+        }
+        
 		// We detect and process links
 		Marklight.linkRegex.matches(textStorage.string, range: wholeRange) { (result) -> Void in
 			textStorage.addAttribute(NSForegroundColorAttributeName, value: linkColor, range: result!.range)
@@ -258,16 +257,34 @@ public struct Marklight {
 			}
 		}
 
+        // We detect and process strict bolds
+        Marklight.strictBoldRegex.matches(textStorage.string, range: paragraphRange) { (result) -> Void in
+            textStorage.addAttribute(NSFontAttributeName, value: boldFont, range: result!.range)
+            textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: NSMakeRange(result!.range.location, 2))
+            textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: NSMakeRange(result!.range.location + result!.range.length - 2, 2))
+        }
+        
+        // We detect and process bolds
+        Marklight.boldRegex.matches(textStorage.string, range: paragraphRange) { (result) -> Void in
+            textStorage.addAttribute(NSFontAttributeName, value: boldFont, range: result!.range)
+            textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: result!.range)
+            textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: NSMakeRange(result!.range.location, 2))
+            textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: NSMakeRange(result!.range.location + result!.range.length - 2, 2))
+        }
+        
 		// We detect and process inline code
 		Marklight.codeSpanRegex.matches(textStorage.string, range: wholeRange) { (result) -> Void in
-			textStorage.addAttribute(NSFontAttributeName, value: codeFont, range: result!.range)
-			textStorage.addAttribute(NSForegroundColorAttributeName, value: codeColor, range: result!.range)
-			Marklight.codeSpanOpeningRegex.matches(textStorage.string, range: paragraphRange) { (innerResult) -> Void in
-				textStorage.addAttribute(NSForegroundColorAttributeName, value: themeColor, range: innerResult!.range)
-			}
-			Marklight.codeSpanClosingRegex.matches(textStorage.string, range: paragraphRange) { (innerResult) -> Void in
-				textStorage.addAttribute(NSForegroundColorAttributeName, value: themeColor, range: innerResult!.range)
-			}
+            let r = result!.range
+			textStorage.addAttribute(NSFontAttributeName, value: codeFont, range: r)
+			textStorage.addAttribute(NSForegroundColorAttributeName, value: codeColor, range: r)
+            let sub = (textStorage.string as NSString).substringWithRange(r)
+            let triple = "```"
+            var count = 1
+            if sub.hasPrefix(triple) { count = 3 }
+            let prefixRange = NSMakeRange(r.location, count)
+            let subfixRange = NSMakeRange(r.location + r.length - count, count)
+            textStorage.addAttribute(NSForegroundColorAttributeName, value: italicColor, range: prefixRange)
+            textStorage.addAttribute(NSForegroundColorAttributeName, value: italicColor, range: subfixRange)
 		}
 
 		// We detect and process code blocks
@@ -286,13 +303,7 @@ public struct Marklight {
 //			}
 //		}
 
-		// We detect and process strict italics
-		Marklight.strictItalicRegex.matches(textStorage.string, range: paragraphRange) { (result) -> Void in
-			textStorage.addAttribute(NSFontAttributeName, value: italicFont, range: result!.range)
-			textStorage.addAttribute(NSForegroundColorAttributeName, value: italicColor, range: result!.range)
-//			textStorage.addAttribute(NSForegroundColorAttributeName, value: italicColor, range: NSMakeRange(result!.range.location, 1))
-//			textStorage.addAttribute(NSForegroundColorAttributeName, value: italicColor, range: NSMakeRange(result!.range.location + result!.range.length - 1, 1))
-		}
+
 
 		// We detect and process italics
 //		Marklight.italicRegex.matches(textStorage.string, range: paragraphRange) { (result) -> Void in
@@ -302,20 +313,7 @@ public struct Marklight {
 ////			textStorage.addAttribute(NSForegroundColorAttributeName, value: italicColor, range: NSMakeRange(result!.range.location + result!.range.length - 1, 1))
 //		}
 
-		// We detect and process strict bolds
-		Marklight.strictBoldRegex.matches(textStorage.string, range: paragraphRange) { (result) -> Void in
-			textStorage.addAttribute(NSFontAttributeName, value: boldFont, range: result!.range)
-			textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: NSMakeRange(result!.range.location, 2))
-			textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: NSMakeRange(result!.range.location + result!.range.length - 2, 2))
-		}
-
-		// We detect and process bolds
-		Marklight.boldRegex.matches(textStorage.string, range: paragraphRange) { (result) -> Void in
-			textStorage.addAttribute(NSFontAttributeName, value: boldFont, range: result!.range)
-			textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: result!.range)
-			textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: NSMakeRange(result!.range.location, 2))
-			textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: NSMakeRange(result!.range.location + result!.range.length - 2, 2))
-		}
+		
 
 		// We detect and process comment
 		Marklight.commentRegex.matches(textStorage.string, range: paragraphRange) { (result) -> Void in
@@ -653,7 +651,7 @@ public struct Marklight {
 
 	private static let codeSpanClosingPattern = [
 		"(?<![\\\\`])   # Character before opening ` can't be a backslash or backtick",
-		"(>?)(`+)           # $1 = Opening run of `"
+		"(`+)           # $1 = Opening run of `"
 	].joinWithSeparator("\n")
 
 	private static let codeSpanClosingRegex = Regex(pattern: codeSpanClosingPattern, options: [.AllowCommentsAndWhitespace, .DotMatchesLineSeparators])
@@ -704,7 +702,8 @@ public struct Marklight {
 	 *Italic*
 	 _Italic_
 	 */
-	private static let strictItalicPattern = "(?u)(\\*\\b(?:(?!\\*).)*?\\b(\\!?)\\*)" // "(^|[\\W_])(?:(?!\\1)|(?=^))(\\*|_)(?=\\S)((?:(?!\\2).)*?\\S)\\2(?!\\2)(?=[\\W_]|$)" //
+    //"(?u)(\\*\\b(?:(?!\\*).)*?\\b(\\!?)\\*)"
+	private static let strictItalicPattern = "(?u)(^|[\\W_])(?:(?!\\1)|(?=^))(\\*|_)(?=\\S)((?:(?!\\2).)*?\\S)\\2(?!\\2)(?=[\\W_]|$)" //
 
 	private static let strictItalicRegex = Regex(pattern: strictItalicPattern, options: [.AnchorsMatchLines])
 

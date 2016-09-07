@@ -48,6 +48,8 @@
 
 public class SMarkEditor: MTextView {
     
+    private var needReset = false
+    
     deinit { NSNotificationCenter.defaultCenter().removeObserver(self) }
     
     required public init?(coder: NSCoder) {
@@ -65,6 +67,7 @@ public class SMarkEditor: MTextView {
         automaticDashSubstitutionEnabled = false
         automaticLinkDetectionEnabled = false
         allowsUndo = true
+        delegate = self
         autoresizingMask = [NSAutoresizingMaskOptions.ViewWidthSizable, NSAutoresizingMaskOptions.ViewHeightSizable]
         font = Marklight.theme.font
         if let color = Marklight.theme.foregroundColor {
@@ -210,11 +213,20 @@ public class SMarkEditor: MTextView {
     }
     
     private var rawText: String? {
+        get {
         #if os(OSX)
             return string
         #elseif os(iOS)
             return text
         #endif
+        }
+        set(val) {
+            #if os(OSX)
+                 string = val
+            #elseif os(iOS)
+                 text = val
+            #endif
+        }
     }
     
     private var smarkTextStorage: NSTextStorage? {
@@ -283,4 +295,33 @@ public class SMarkEditor: MTextView {
         NSObject.cancelPreviousPerformRequestsWithTarget(self, selector: sel, object: nil)
         performSelector(sel, withObject: nil, afterDelay: 0.2)
     }
+    
 }
+
+
+#if os(OSX)
+    extension SMarkEditor: NSTextViewDelegate {
+        
+        public override func didChangeText() {
+            super.didChangeText()
+            if needReset {
+                needReset = false
+                renderWhenTextChange()
+                selectedRange = NSMakeRange(0,0)
+                scrollRangeToVisible(selectedRange)
+            }
+        }
+        
+        public func textView(textView: NSTextView, shouldChangeTextInRanges affectedRanges: [NSValue], replacementStrings: [String]?) -> Bool {
+            for range in affectedRanges {
+                let r = range.rangeValue
+                let max = rawText?.characters.count ?? 0
+                let selectAll = r.location == 0 && r.length == max
+                if let replace = replacementStrings?.first where replace != "" && selectAll {
+                   needReset = true
+                }
+            }
+            return true
+        }
+    }
+#endif

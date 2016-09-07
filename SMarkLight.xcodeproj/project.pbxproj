@@ -159,7 +159,7 @@
 		16646C971D7824A500DCF2B5 /* Tomorrow.style */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Tomorrow.style; sourceTree = "<group>"; };
 		16646C981D7824A500DCF2B5 /* Writer+.style */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Writer+.style"; sourceTree = "<group>"; };
 		16646C991D7824A500DCF2B5 /* Writer.style */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Writer.style; sourceTree = "<group>"; };
-		16646CB81D78256700DCF2B5 /* Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
+		16646CB81D78256700DCF2B5 /* Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; usesTabs = 0; };
 		16CDFB151D7588D1002D50A2 /* SMarkLight.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SMarkLight.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		16CDFB181D7588D1002D50A2 /* SMarkLight.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMarkLight.h; sourceTree = "<group>"; };
 		16CDFB1A1D7588D1002D50A2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };

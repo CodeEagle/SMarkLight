@@ -79,6 +79,7 @@ public class SMarkEditor: MTextView {
         guard let value = superview else { return }
         translatesAutoresizingMaskIntoConstraints = false
         value.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-0-[textView]-0-|", options: NSLayoutFormatOptions.DirectionLeftToRight, metrics: nil, views: ["textView": self]))
+        value.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-0-[textView]-0-|", options: NSLayoutFormatOptions.DirectionLeftToRight, metrics: nil, views: ["textView": self]))
     }
     
     override public var string: String? {

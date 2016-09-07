@@ -14,8 +14,13 @@
 #endif
 #if os(OSX)
     public class SMarkEditorScrollView: NSScrollView {
-        
+        public typealias DidRender = (String?) -> Void
         private var textView: SMarkEditor!
+        public var didRender: DidRender? {
+            didSet {
+                textView?.didRender = didRender
+            }
+        }
         public required init?(coder: NSCoder) {
             super.init(coder: coder)
             setup()
@@ -27,6 +32,7 @@
         }
         
         private func setup() {
+           
             textView = SMarkEditor(frame: bounds)
             documentView = textView
             textView.textContainerInset = NSMakeSize(4, 4)
@@ -49,6 +55,8 @@
 public class SMarkEditor: MTextView {
     
     private var needReset = false
+    
+    public var didRender: SMarkEditorScrollView.DidRender?
     
     deinit { NSNotificationCenter.defaultCenter().removeObserver(self) }
     
@@ -252,6 +260,7 @@ public class SMarkEditor: MTextView {
     }
     
     @objc private func dealText() {
+        didRender?(rawText)
         var range: NSRange?
         #if os(OSX)
             guard let st = textStorage, let visibleRect = enclosingScrollView?.contentView.documentVisibleRect, let container = textContainer,let manager = layoutManager else {

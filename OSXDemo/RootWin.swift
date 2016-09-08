@@ -21,7 +21,7 @@ class RootWin: NSWindow {
 	}
 
 	convenience init() {
-		self.init(contentRect: NSMakeRect(0, 0, 300, 400), styleMask: 0, backing: NSBackingStoreType.Buffered, defer: true)
+		self.init(contentRect: NSMakeRect(0, 0, 800, 600), styleMask: 0, backing: NSBackingStoreType.Buffered, defer: true)
 		setup()
 	}
 

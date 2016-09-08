@@ -80,11 +80,20 @@ public struct Marklight {
 		func rangeWithoutQuote(of range: NSRange) -> NSRange {
 			var range = range
 			let a = textStorage.string as NSString
-			let sub = a.substringWithRange(range)
+			var sub = a.substringWithRange(range)
+            var newlineOffset = 0
+            repeat {
+                if sub.hasPrefix("\n") {
+                    newlineOffset += 1
+                    sub = (sub as NSString).substringWithRange(NSMakeRange(1, sub.characters.count - 1))
+                }
+            } while (sub.hasPrefix("\n"))
 			if sub.hasPrefix(">") {
 				range.location += 1
 				range.length -= 1
 			}
+            range.location += newlineOffset
+            range.length -= newlineOffset
 			return range
 		}
 
@@ -114,7 +123,7 @@ public struct Marklight {
         
         Marklight.headersSetexRegex.matches(textStorage.string, range: wholeRange) { (result) -> Void in
             headerLightUpWithoutQuote(at: result!.range)
-            Marklight.headersSetexUnderlineRegex.matches(textStorage.string, range: paragraphRange) { (innerResult) -> Void in
+            Marklight.headersSetexUnderlineRegex.matches(textStorage.string, range: result!.range) { (innerResult) -> Void in
                 let realRange = rangeWithoutQuote(of: innerResult!.range)
                 textStorage.addAttribute(NSForegroundColorAttributeName, value: titleColor, range: realRange)
             }
@@ -160,7 +169,7 @@ public struct Marklight {
             let sub = (textStorage.string as NSString).substringWithRange(result!.range)
             let subRange = NSMakeRange(result!.range.location, sub.characters.count)
 			Marklight.listOpeningRegex.matches(textStorage.string, range: subRange) { (innerResult) -> Void in
-//                let sb = (textStorage.string as NSString).substringWithRange(innerResult!.range)
+//                print((textStorage.string as NSString).substringWithRange(innerResult!.range))
 				let r = rangeWithoutQuote(of: innerResult!.range)
 				textStorage.addAttribute(NSForegroundColorAttributeName, value: listColor, range: r)
 			}
@@ -258,29 +267,48 @@ public struct Marklight {
 		}
 
         // We detect and process strict bolds
-        Marklight.strictBoldRegex.matches(textStorage.string, range: paragraphRange) { (result) -> Void in
-            textStorage.addAttribute(NSFontAttributeName, value: boldFont, range: result!.range)
-            textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: NSMakeRange(result!.range.location, 2))
-            textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: NSMakeRange(result!.range.location + result!.range.length - 2, 2))
-        }
+//        Marklight.strictBoldRegex.matches(textStorage.string, range: paragraphRange) { (result) -> Void in
+//            print((textStorage.string as NSString).substringWithRange(result!.range))
+//            textStorage.addAttribute(NSFontAttributeName, value: boldFont, range: result!.range)
+//            textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: NSMakeRange(result!.range.location, 2))
+//            textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: NSMakeRange(result!.range.location + result!.range.length - 2, 2))
+//        }
         
         // We detect and process bolds
         Marklight.boldRegex.matches(textStorage.string, range: paragraphRange) { (result) -> Void in
+            
             textStorage.addAttribute(NSFontAttributeName, value: boldFont, range: result!.range)
             textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: result!.range)
-            textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: NSMakeRange(result!.range.location, 2))
-            textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: NSMakeRange(result!.range.location + result!.range.length - 2, 2))
+//            textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: NSMakeRange(result!.range.location, 2))
+//            textStorage.addAttribute(NSForegroundColorAttributeName, value: boldColor, range: NSMakeRange(result!.range.location + result!.range.length - 2, 2))
+        }
+        
+        // We detect and process seperator
+        Marklight.seperatorRegex.matches(textStorage.string, range: wholeRange) { (result) -> Void in
+            
+            textStorage.addAttribute(NSFontAttributeName, value: themeFont, range: result!.range)
+            textStorage.addAttribute(NSForegroundColorAttributeName, value: themeColor, range: result!.range)
         }
         
 		// We detect and process inline code
 		Marklight.codeSpanRegex.matches(textStorage.string, range: wholeRange) { (result) -> Void in
-            let r = result!.range
+            var r = result!.range
 			textStorage.addAttribute(NSFontAttributeName, value: codeFont, range: r)
 			textStorage.addAttribute(NSForegroundColorAttributeName, value: codeColor, range: r)
-            let sub = (textStorage.string as NSString).substringWithRange(r)
+            var sub = (textStorage.string as NSString).substringWithRange(r)
+            var newlineOffset = 0
+            repeat {
+                if sub.hasPrefix("\n") {
+                    newlineOffset += 1
+                    sub = (sub as NSString).substringWithRange(NSMakeRange(1, sub.characters.count - 1))
+                }
+            } while (sub.hasPrefix("\n"))
+            r.location += newlineOffset
+            r.length -= newlineOffset
             let triple = "```"
             var count = 1
             if sub.hasPrefix(triple) { count = 3 }
+            
             let prefixRange = NSMakeRange(r.location, count)
             let subfixRange = NSMakeRange(r.location + r.length - count, count)
             textStorage.addAttribute(NSForegroundColorAttributeName, value: italicColor, range: prefixRange)
@@ -293,6 +321,8 @@ public struct Marklight {
 			textStorage.addAttribute(NSForegroundColorAttributeName, value: codeColor, range: result!.range)
 		}
 
+        
+        
 //		// We detect and process quotes
 //		Marklight.blockQuoteRegex.matches(textStorage.string, range: wholeRange) { (result) -> Void in
 //			textStorage.addAttribute(NSFontAttributeName, value: quoteFont, range: result!.range)
@@ -333,7 +363,15 @@ public struct Marklight {
 	/// Tabs are automatically converted to spaces as part of the transform
 	/// this constant determines how "wide" those tabs become in spaces
 	private static let _tabWidth = 4
-
+    
+    
+    // MARK: Seperator 
+    private static let seperatorPattern = [
+        "\\n{2,}",
+        "(-?\\s?\\*?)*",
+        "\\n+"
+        ].joinWithSeparator("\n")
+    private static let seperatorRegex = Regex(pattern: seperatorPattern, options: [.AllowCommentsAndWhitespace, .AnchorsMatchLines])
 	// MARK: Headers
 
 	/*
@@ -343,15 +381,15 @@ public struct Marklight {
 	 Subhead
 	 -------
 	 */
-
-	private static let headerSetexPattern = [
-		"^(.+?)",
-		"\\p{Z}*",
-		"\\n",
-		"(>?)(\\s?)(=+|-+)     # $1 = string of ='s or -'s",
-		"\\p{Z}*",
-		"\\n+"
-	].joinWithSeparator("\n")
+    private static let headerSetexPattern = "^(.*)\\n(=+|-+)\\n"
+//	private static let headerSetexPattern = [
+//		"^(.+?)",
+//		"\\p{Z}*",
+//		"\\n",
+//		"(>?)(\\s?)(=+|-+)     # $1 = string of ='s or -'s",
+//		"\\p{Z}*",
+//		"\\n+"
+//	].joinWithSeparator("\n")
 
 	private static let headersSetexRegex = Regex(pattern: headerSetexPattern, options: [.AllowCommentsAndWhitespace, .AnchorsMatchLines])
 
@@ -629,10 +667,12 @@ public struct Marklight {
 	].joinWithSeparator("\n")
 
 	private static let codeBlockRegex = Regex(pattern: codeBlockPattern, options: [.AllowCommentsAndWhitespace, .AnchorsMatchLines])
+    
+//    private static let codeSpanPattern = "(?m)\\n*`{1,3}.*\\b\\n?[^`{1,3}]*`{1,3}"
 
 	private static let codeSpanPattern = [
 		"(?<![\\\\`])   # Character before opening ` can't be a backslash or backtick",
-		"(`+)           # $1 = Opening run of `",
+		"(`+)(\\w*\\n?)          # $1 = Opening run of `",
 		"(?!`)          # and no more backticks -- match the full run",
 		"(.+?)          # $2 = The code block",
 		"(?<!`)",
@@ -642,19 +682,19 @@ public struct Marklight {
 
 	private static let codeSpanRegex = Regex(pattern: codeSpanPattern, options: [.AllowCommentsAndWhitespace, .DotMatchesLineSeparators])
 
-	private static let codeSpanOpeningPattern = [
-		"(?<![\\\\`])   # Character before opening ` can't be a backslash or backtick",
-		"(>?)(`+)           # $1 = Opening run of `"
-	].joinWithSeparator("\n")
+//	private static let codeSpanOpeningPattern = [
+//		"(?<![\\\\`])   # Character before opening ` can't be a backslash or backtick",
+//		"(>?)(`+)           # $1 = Opening run of `"
+//	].joinWithSeparator("\n")
+//
+//	private static let codeSpanOpeningRegex = Regex(pattern: codeSpanOpeningPattern, options: [.AllowCommentsAndWhitespace, .DotMatchesLineSeparators])
 
-	private static let codeSpanOpeningRegex = Regex(pattern: codeSpanOpeningPattern, options: [.AllowCommentsAndWhitespace, .DotMatchesLineSeparators])
-
-	private static let codeSpanClosingPattern = [
-		"(?<![\\\\`])   # Character before opening ` can't be a backslash or backtick",
-		"(`+)           # $1 = Opening run of `"
-	].joinWithSeparator("\n")
-
-	private static let codeSpanClosingRegex = Regex(pattern: codeSpanClosingPattern, options: [.AllowCommentsAndWhitespace, .DotMatchesLineSeparators])
+//	private static let codeSpanClosingPattern = [
+//		"(?<![\\\\`])   # Character before opening ` can't be a backslash or backtick",
+//		"(`+)           # $1 = Opening run of `"
+//	].joinWithSeparator("\n")
+//
+//	private static let codeSpanClosingRegex = Regex(pattern: codeSpanClosingPattern, options: [.AllowCommentsAndWhitespace, .DotMatchesLineSeparators])
 
 	// MARK: Block quotes
 

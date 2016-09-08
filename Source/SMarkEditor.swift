@@ -54,7 +54,8 @@
 
 public class SMarkEditor: MTextView {
     
-    private var needReset = false
+    
+    private var resetRange: NSRange?
     
     public var didRender: SMarkEditorScrollView.DidRender?
     
@@ -105,9 +106,7 @@ public class SMarkEditor: MTextView {
             renderWhenTextChange()
         }
     }
-    
     #elseif os(iOS)
-    
     override init(frame: CGRect, textContainer: NSTextContainer?) {
         super.init(frame: frame, textContainer: textContainer)
         setup()
@@ -194,6 +193,7 @@ public class SMarkEditor: MTextView {
         #endif
         guard let r = range else { return }
         let targetLength = value.characters.count
+        if NSMaxRange(r) == targetLength { return }
         let pageSize = r.length + 100
         var location = 0
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), { () -> Void in
@@ -249,7 +249,7 @@ public class SMarkEditor: MTextView {
     
     private func firstPage() {
         guard let st = smarkTextStorage, value = rawText else { return }
-        let r = NSMakeRange(0, min(500, value.characters.count))
+        let r = NSMakeRange(0, min(1000, value.characters.count))
         Marklight.processEditing(st, with: r)
     }
     
@@ -289,9 +289,10 @@ public class SMarkEditor: MTextView {
     
     private func nearestNewLine(of range: NSRange) -> NSRange {
         guard let value = rawText else { return range }
+        if NSMaxRange(range) == rawText?.characters.count { return range }
         var range = range
         let sub = (value  as NSString).substringWithRange(range)
-        let r = (sub as NSString).rangeOfString("\n\n", options: NSStringCompareOptions.BackwardsSearch)
+        let r = (sub as NSString).rangeOfString("\n", options: NSStringCompareOptions.BackwardsSearch)
         if r.location != NSNotFound {
             let dealLength = NSMaxRange(r)
             range.length = dealLength
@@ -313,10 +314,14 @@ public class SMarkEditor: MTextView {
         
         public override func didChangeText() {
             super.didChangeText()
-            if needReset {
-                needReset = false
+            reset()
+        }
+        
+        private func reset() {
+            if let range = resetRange {
+                resetRange = nil
                 renderWhenTextChange()
-                selectedRange = NSMakeRange(0,0)
+                selectedRange = range
                 scrollRangeToVisible(selectedRange)
             }
         }
@@ -324,10 +329,16 @@ public class SMarkEditor: MTextView {
         public func textView(textView: NSTextView, shouldChangeTextInRanges affectedRanges: [NSValue], replacementStrings: [String]?) -> Bool {
             for range in affectedRanges {
                 let r = range.rangeValue
+                let zeroRange = NSMakeRange(0, 0)
+                let maxRangeLocation = NSMaxRange(r)
                 let max = rawText?.characters.count ?? 0
+                let first = replacementStrings?.first
+                let isPasteBorad = NSPasteboard.generalPasteboard().stringForType(NSPasteboardTypeString) == first
                 let selectAll = r.location == 0 && r.length == max
-                if let replace = replacementStrings?.first where replace != "" && selectAll {
-                   needReset = true
+                if let replace = first where replace != "" && selectAll && maxRangeLocation != NSMaxRange(zeroRange) {
+                   resetRange =  zeroRange
+                } else if first != "\n" && first != "" && isPasteBorad {
+                    resetRange = NSMakeRange(maxRangeLocation, 0)
                 }
             }
             return true

@@ -21,7 +21,7 @@ class ARootWin: NSWindow {
 
 	convenience init() {
 		let mask = NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSResizableWindowMask
-		self.init(contentRect: NSMakeRect(0, 0, 300, 400), styleMask: mask, backing: NSBackingStoreType.Buffered, defer: true)
+		self.init(contentRect: NSMakeRect(0, 0, 800, 600), styleMask: mask, backing: NSBackingStoreType.Buffered, defer: true)
 		setup()
 	}
 
@@ -57,7 +57,7 @@ class RootVC: NSViewController {
 	}
 
 	override func loadView() {
-		view = NSVisualEffectView(frame: NSMakeRect(0, 0, 300, 400))
+		view = NSVisualEffectView(frame: NSMakeRect(0, 0, 800, 600))
 	}
 
 	override init?(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {

@@ -13,10 +13,10 @@ func matchesForRegexInText(regex: String, text: String) -> [String] {
         return []
     }
 }
-
-let string = "*寫作*用語言 *Hello* 123\\. *asdf*"
-let matches = matchesForRegexInText("(?u)(\\*\\b(?:(?!\\*).)*?\\b\\*)", text: string)
+let p = NSBundle.mainBundle().pathForResource("File2", ofType: nil)!
+let string = "\n\n**这些文字会生成`<strong>`**\n\n*这些文字会生成`<em>`*"//try? String(contentsOfFile: p)
+//"(?m)\\n*`{1,3}.*\\b\\n?(.|\\n)*\\n`{1,3}"
+let matches = matchesForRegexInText("\\n{2,}(-?\\s?\\*?)*\\n+", text: string)
 print(matches)
-
 
 

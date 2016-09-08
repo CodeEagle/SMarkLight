@@ -193,7 +193,7 @@ public class SMarkEditor: MTextView {
         #endif
         guard let r = range else { return }
         let targetLength = value.characters.count
-        if NSMaxRange(r) == targetLength { return }
+        if NSMaxRange(r) == targetLength { return }// first page
         let pageSize = r.length + 100
         var location = 0
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), { () -> Void in

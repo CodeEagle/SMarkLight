@@ -54,6 +54,10 @@
 		16646CB91D78256700DCF2B5 /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16646CB81D78256700DCF2B5 /* Extension.swift */; };
 		16646CBA1D78256700DCF2B5 /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16646CB81D78256700DCF2B5 /* Extension.swift */; };
 		169D73C31D7EC8A7003A8BE9 /* SMarkEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16646C851D77E08E00DCF2B5 /* SMarkEditor.swift */; };
+		16C943191D82A60F000A4A00 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16C943181D82A60F000A4A00 /* Parser.swift */; };
+		16C9431A1D82A60F000A4A00 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16C943181D82A60F000A4A00 /* Parser.swift */; };
+		16C9431C1D82A68C000A4A00 /* Regex.json in Resources */ = {isa = PBXBuildFile; fileRef = 16C9431B1D82A68C000A4A00 /* Regex.json */; };
+		16C9431D1D82A68C000A4A00 /* Regex.json in Resources */ = {isa = PBXBuildFile; fileRef = 16C9431B1D82A68C000A4A00 /* Regex.json */; };
 		16CDFB191D7588D1002D50A2 /* SMarkLight.h in Headers */ = {isa = PBXBuildFile; fileRef = 16CDFB181D7588D1002D50A2 /* SMarkLight.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		16CDFB201D7588D1002D50A2 /* SMarkLight.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 16CDFB151D7588D1002D50A2 /* SMarkLight.framework */; };
 		16CDFB251D7588D1002D50A2 /* SMarkLightTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16CDFB241D7588D1002D50A2 /* SMarkLightTests.swift */; };
@@ -160,6 +164,8 @@
 		16646C981D7824A500DCF2B5 /* Writer+.style */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Writer+.style"; sourceTree = "<group>"; };
 		16646C991D7824A500DCF2B5 /* Writer.style */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Writer.style; sourceTree = "<group>"; };
 		16646CB81D78256700DCF2B5 /* Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; usesTabs = 0; };
+		16C943181D82A60F000A4A00 /* Parser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
+		16C9431B1D82A68C000A4A00 /* Regex.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Regex.json; sourceTree = "<group>"; };
 		16CDFB151D7588D1002D50A2 /* SMarkLight.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SMarkLight.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		16CDFB181D7588D1002D50A2 /* SMarkLight.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SMarkLight.h; sourceTree = "<group>"; };
 		16CDFB1A1D7588D1002D50A2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -175,6 +181,7 @@
 		16CDFB441D75891B002D50A2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		16CDFB461D75891B002D50A2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		16CDFB5D1D75898B002D50A2 /* Sample.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = Sample.md; sourceTree = "<group>"; };
+		16F4B0161D826635007EB00B /* MarkdownParser.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = MarkdownParser.playground; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -283,6 +290,7 @@
 		16CDFB0B1D7588D1002D50A2 = {
 			isa = PBXGroup;
 			children = (
+				16F4B0161D826635007EB00B /* MarkdownParser.playground */,
 				162166821D769531001B7753 /* osx.playground */,
 				1621667F1D7672FE001B7753 /* MyPlayground.playground */,
 				16CDFB2F1D7588FC002D50A2 /* Source */,
@@ -331,6 +339,8 @@
 		16CDFB2F1D7588FC002D50A2 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				16C9431B1D82A68C000A4A00 /* Regex.json */,
+				16C943181D82A60F000A4A00 /* Parser.swift */,
 				16646C8A1D7824A500DCF2B5 /* Style */,
 				16CDFB301D7588FC002D50A2 /* Marklight.swift */,
 				16646C851D77E08E00DCF2B5 /* SMarkEditor.swift */,
@@ -558,6 +568,7 @@
 				16646CA51D7824A500DCF2B5 /* Mou Paper.style in Resources */,
 				16646C9B1D7824A500DCF2B5 /* Mou Fresh Air+.style in Resources */,
 				16646CB51D7824A500DCF2B5 /* Writer+.style in Resources */,
+				16C9431D1D82A68C000A4A00 /* Regex.json in Resources */,
 				16646CA11D7824A500DCF2B5 /* Mou Night.style in Resources */,
 				16646CAF1D7824A500DCF2B5 /* Tomorrow Blue.style in Resources */,
 			);
@@ -597,6 +608,7 @@
 				16646CA41D7824A500DCF2B5 /* Mou Paper.style in Resources */,
 				16646C9A1D7824A500DCF2B5 /* Mou Fresh Air+.style in Resources */,
 				16646CB41D7824A500DCF2B5 /* Writer+.style in Resources */,
+				16C9431C1D82A68C000A4A00 /* Regex.json in Resources */,
 				16646CA01D7824A500DCF2B5 /* Mou Night.style in Resources */,
 				16646CAE1D7824A500DCF2B5 /* Tomorrow Blue.style in Resources */,
 			);
@@ -629,6 +641,7 @@
 			files = (
 				16646CBA1D78256700DCF2B5 /* Extension.swift in Sources */,
 				169D73C31D7EC8A7003A8BE9 /* SMarkEditor.swift in Sources */,
+				16C9431A1D82A60F000A4A00 /* Parser.swift in Sources */,
 				162166A01D76AD12001B7753 /* Marklight.swift in Sources */,
 				16646C891D781BC500DCF2B5 /* SMarkStyle.swift in Sources */,
 			);
@@ -658,6 +671,7 @@
 			files = (
 				16646CB91D78256700DCF2B5 /* Extension.swift in Sources */,
 				16646C881D781BC500DCF2B5 /* SMarkStyle.swift in Sources */,
+				16C943191D82A60F000A4A00 /* Parser.swift in Sources */,
 				16CDFB321D7588FC002D50A2 /* Marklight.swift in Sources */,
 				16FA5D271D7E69BC00CA99DD /* SMarkEditor.swift in Sources */,
 			);

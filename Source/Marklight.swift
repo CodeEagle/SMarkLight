@@ -475,6 +475,7 @@ public struct Marklight {
 	private static let _markerOL = "(\\n*|\\s+)\\d+[.]"
 
 	private static let _listMarker = "(?m)^((\\n*(>?\\s?)\\*)|((\\n*(>?\\s?)|\\s+)\\d+[.]))"//"(>?\\s?)(?:\(_markerUL)|\(_markerOL))"
+    let a = "((\\p{Z}{0,3}((?m)^((\\n*(>?\\s?)\\*)|((\\n*(>?\\s?)|\\s+)\\d+[.])))\\p{Z}+)(?s:.+?)(\\z|\\n{2,}(?=\\S)(?!\\p{Z}*(?m)^((\\n*(>?\\s?)\\*)|((\\n*(>?\\s?)|\\s+)\\d+[.]))\\p{Z}+)))"
 	private static let _wholeList = [
 		"(                               # $1 = whole list",
 		"  (                             # $2",

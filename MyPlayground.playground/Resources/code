@@ -1,11 +1,4 @@
-![a text][id]
-「id」是圖片參考的名稱，圖片參考的定義方式則和連結參考一樣：
-
-[id]: http://ww2.sinaimg.cn/mw690/417b96e8gw1f7mavtowcqj20zk0qoqau.jpg "Optional title attribute"
-
-![b text](/path/to/img.jpg)
-
-![c text](/path/to/img.jpg "Optional title~")
+#header
 
 ``Hello **`strong text** here``
 
@@ -47,5 +40,7 @@ st->op->cond
 cond(yes)->e
 cond(no)->op
 ```
-
+eodne
 `asdf`
+
+doen

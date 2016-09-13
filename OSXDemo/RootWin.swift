@@ -38,8 +38,9 @@ class RootWin: NSWindow {
 		contentView?.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-0-[sc]-0-|", options: NSLayoutFormatOptions.DirectionLeftToRight, metrics: nil, views: ["sc": sc]))
     
 		// Load a sample markdown content from a file inside the app bundle
-		
-        
+        let sample = NSBundle.mainBundle().pathForResource("Sample", ofType: "md")!
+        let str = (try? String(contentsOfFile: sample))!
+        sc.string = str
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(3 * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) { () -> Void in
 //            Marklight.theme = SMarkStyle.List.mouNight.value!
         }

@@ -5,7 +5,11 @@
 //  Created by LawLincoln on 16/9/1.
 //  Copyright © 2016年 LawLincoln. All rights reserved.
 //
-
+#if os(iOS)
+    import UIKit
+#elseif os(OSX)
+    import Cocoa
+#endif
 import Foundation
 let baseBundle = NSBundle(forClass: SMarkEditor.self)
 public enum SMarkStyleItemType: String {

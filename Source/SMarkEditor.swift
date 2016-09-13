@@ -12,9 +12,10 @@
     import UIKit
     public typealias MTextView = UITextView
 #endif
+public typealias DidRender = (String?) -> Void
 #if os(OSX)
     public class SMarkEditorScrollView: NSScrollView {
-        public typealias DidRender = (String?) -> Void
+        
         private var textView: SMarkEditor!
         public var didRender: DidRender? {
             didSet {
@@ -38,11 +39,11 @@
             textView.textContainerInset = NSMakeSize(4, 4)
             autoresizingMask = [NSAutoresizingMaskOptions.ViewWidthSizable, NSAutoresizingMaskOptions.ViewHeightSizable]
             themeChange()
-            NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(SMarkEditorScrollView.themeChange), name: Marklight.Event.themeChange.rawValue, object: nil)
+            NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(SMarkEditorScrollView.themeChange), name: SMarkParser.Event.themeChange.rawValue, object: nil)
         }
         
         @objc private func themeChange() {
-            if let color = Marklight.theme.backgroundColor { backgroundColor = color }
+            if let color = SMarkParser.shared.theme.backgroundColor { backgroundColor = color }
         }
         
         public var string: String? {
@@ -56,8 +57,8 @@ public class SMarkEditor: MTextView {
     
     
     private var resetRange: NSRange?
-    
-    public var didRender: SMarkEditorScrollView.DidRender?
+    private var firstPageLength = 0
+    private var codeBlockRange: [NSRange] = []
     
     deinit { NSNotificationCenter.defaultCenter().removeObserver(self) }
     
@@ -65,7 +66,15 @@ public class SMarkEditor: MTextView {
         super.init(coder: coder)
         setup()
     }
+    
+    public var didRender: DidRender?
+    
+    @objc private func themeChange() {
+        if let color = SMarkParser.shared.theme.backgroundColor { backgroundColor = color }
+    }
+    
     #if os(OSX)
+    
     override init(frame frameRect: NSRect, textContainer container: NSTextContainer?) {
         super.init(frame: frameRect, textContainer: container)
         setup()
@@ -78,20 +87,18 @@ public class SMarkEditor: MTextView {
         allowsUndo = true
         delegate = self
         autoresizingMask = [NSAutoresizingMaskOptions.ViewWidthSizable, NSAutoresizingMaskOptions.ViewHeightSizable]
-        font = Marklight.theme.font
-        if let color = Marklight.theme.foregroundColor {
+        font = SMarkParser.shared.theme.font
+        if let color = SMarkParser.shared.theme.foregroundColor {
             textColor = color
             insertionPointColor = color
         }
         
         themeChange()
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(SMarkEditor.textChange), name: NSTextDidChangeNotification, object: self)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(SMarkEditor.renderWhenTextChange), name: Marklight.Event.themeChange.rawValue, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(SMarkEditor.renderWhenTextChange), name: SMarkParser.Event.themeChange.rawValue, object: nil)
     }
     
-    @objc private func themeChange() {
-        if let color = Marklight.theme.backgroundColor { backgroundColor = color }
-    }
+    
     
     override public var intrinsicContentSize: NSSize {
         guard let container = textContainer, manager = layoutManager else { return NSZeroSize }
@@ -122,12 +129,12 @@ public class SMarkEditor: MTextView {
     }
 
     private func setup() {
-        font = Marklight.theme.font
-        if let color = Marklight.theme.foregroundColor {
+        font = SMarkParser.shared.theme.font
+        if let color = SMarkParser.shared.theme.foregroundColor {
             textColor = color
             tintColor = color
         }
-        if let color = Marklight.theme.backgroundColor { backgroundColor = color }
+        if let color = SMarkParser.shared.theme.backgroundColor { backgroundColor = color }
         textContainerInset = UIEdgeInsetsMake(4, 4, 4, 4)
         NSNotificationCenter.defaultCenter().addObserverForName(UITextViewTextDidChangeNotification, object: self, queue: NSOperationQueue.mainQueue()) {[weak self] (notification) -> Void in
             guard let sself = self else { return }
@@ -140,7 +147,7 @@ public class SMarkEditor: MTextView {
             }
             sself.textChange()
         }
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(SMarkEditor.renderWhenTextChange), name: Marklight.Event.themeChange.rawValue, object: self)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(SMarkEditor.renderWhenTextChange), name: SMarkParser.Event.themeChange.rawValue, object: self)
     }
     
     private func scrollToCaret(animated animated: Bool) {
@@ -159,43 +166,13 @@ public class SMarkEditor: MTextView {
     }
     
     @objc private func pagedRender() {
-        #if os(OSX)
-            guard let value = string else { return }
-            var range: NSRange?
-            var v = enclosingScrollView?.contentView.documentVisibleRect
-            if let h = v?.height { v?.size.height = h + 50 }// pre render a bit
-            if let visibleRect = v, container = textContainer, visibleGlyphRange = layoutManager?.glyphRangeForBoundingRectWithoutAdditionalLayout(visibleRect, inTextContainer: container) {
-                range = layoutManager?.characterRangeForGlyphRange(visibleGlyphRange, actualGlyphRange: nil)
-            }
-            if range == nil || range?.length == 0 {
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(0.05 * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) { () -> Void in
-                    self.pagedRender()
-                }
-                return
-            }
-            guard let st = textStorage  else { return }
-        #elseif os(iOS)
-            guard let value = text else { return }
-            var range: NSRange?
-            var visibleRect = CGRect(origin: self.contentOffset, size: self.bounds.size)
-            visibleRect.size.height += 20 // pre render a bit
-            
-            let visibleGlyphRange = self.layoutManager.glyphRangeForBoundingRectWithoutAdditionalLayout(visibleRect, inTextContainer: self.textContainer)
-            range = self.layoutManager.characterRangeForGlyphRange(visibleGlyphRange, actualGlyphRange: nil)
-            
-            if range == nil || range?.length == 0 {
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(0.05 * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) { () -> Void in
-                    self.pagedRender()
-                }
-                return
-            }
-            let st = textStorage
-        #endif
-        guard let r = range else { return }
+        guard let value = rawText, st = smarkTextStorage else { return }
+        let r = NSMakeRange(0, firstPageLength)
         let targetLength = value.characters.count
-        if NSMaxRange(r) == targetLength { return }// first page
-        let pageSize = r.length + 100
-        var location = 0
+        let maxRange = NSMaxRange(r)
+        if maxRange >= targetLength { return }// first page
+        let pageSize = 512
+        var location = maxRange
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), { () -> Void in
             repeat {
                 var range = NSMakeRange(location, pageSize)
@@ -209,11 +186,19 @@ public class SMarkEditor: MTextView {
                     let dealLength = NSMaxRange(r)
                     range.length = dealLength
                 }
+                for codeRange in self.codeBlockRange {
+                    let end = NSMaxRange(range)
+                    if end > codeRange.location && end < NSMaxRange(codeRange) {
+                        range.length = codeRange.location - range.location
+                        break
+                    }
+                }
                 location += range.length
                 dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                    Marklight.processEditing(st, with: range)
+                    SMarkParser.shared.parse(within: st, in: range)
                 })
             } while( location < targetLength )
+            Swift.print("end:\(CACurrentMediaTime())")
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 self.invalidateIntrinsicContentSize()
             })
@@ -222,11 +207,11 @@ public class SMarkEditor: MTextView {
     
     private var rawText: String? {
         get {
-        #if os(OSX)
-            return string
-        #elseif os(iOS)
-            return text
-        #endif
+            #if os(OSX)
+                return string
+            #elseif os(iOS)
+                return text
+            #endif
         }
         set(val) {
             #if os(OSX)
@@ -245,15 +230,33 @@ public class SMarkEditor: MTextView {
         #endif
     }
     
-    
-    
     private func firstPage() {
         guard let st = smarkTextStorage, value = rawText else { return }
-        let r = NSMakeRange(0, min(1000, value.characters.count))
-        Marklight.processEditing(st, with: r)
+        let max = value.characters.count
+        var r = NSMakeRange(0, min(1000, value.characters.count))
+        if r.length != max {
+            let sub = (value as NSString).substringWithRange(r)
+            let range = (sub as NSString).rangeOfString("\n\n", options: NSStringCompareOptions.BackwardsSearch)
+            if range.location != NSNotFound {
+                let dealLength = NSMaxRange(range)
+                r.length = dealLength
+            }
+        }
+        for range in codeBlockRange {
+            let end = NSMaxRange(r)
+            if end > range.location && end < NSMaxRange(range) {
+                r.length = range.location - r.location
+                break
+            }
+        }
+        firstPageLength = r.length
+        SMarkParser.shared.parse(within: st, in: r, async: false)
+        Swift.print("start:\(CACurrentMediaTime()), total:\(max)")
     }
     
     @objc private func renderWhenTextChange() {
+        guard let value = rawText else { return }
+        codeBlockRange = SMarkParser.shared.codeBlockRange(of: value)
         themeChange()
         firstPage()
         delayPagedRender()
@@ -284,7 +287,7 @@ public class SMarkEditor: MTextView {
             return
         }
         guard let r = range else { return }
-        Marklight.processEditing(st, with: nearestNewLine(of: r))
+        SMarkParser.shared.parse(within: st, in: nearestNewLine(of: r))
     }
     
     private func nearestNewLine(of range: NSRange) -> NSRange {
@@ -292,10 +295,25 @@ public class SMarkEditor: MTextView {
         if NSMaxRange(range) == rawText?.characters.count { return range }
         var range = range
         let sub = (value  as NSString).substringWithRange(range)
-        let r = (sub as NSString).rangeOfString("\n", options: NSStringCompareOptions.BackwardsSearch)
-        if r.location != NSNotFound {
-            let dealLength = NSMaxRange(r)
-            range.length = dealLength
+        if !sub.hasSuffix("\n\n") {
+            var tmpRange = range
+            tmpRange.location = range.length
+            tmpRange.length = 0
+            func nextNewline() -> NSRange {
+                tmpRange.length += 10
+                let next = (value  as NSString).substringWithRange(tmpRange)
+                if next.containsString("\n\n") {
+                    let r = (sub as NSString).rangeOfString("\n\n", options: NSStringCompareOptions.BackwardsSearch)
+                    if r.location != NSNotFound {
+                        let dealLength = NSMaxRange(r)
+                        range.length += dealLength
+                    }
+                    return range
+                } else {
+                    return nextNewline()
+                }
+            }
+            range = nextNewline()
         }
         return range
     }
@@ -307,7 +325,6 @@ public class SMarkEditor: MTextView {
     }
     
 }
-
 
 #if os(OSX)
     extension SMarkEditor: NSTextViewDelegate {
